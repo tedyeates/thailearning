@@ -1,38 +1,42 @@
 <script lang="ts">
-	import TransLabel from '$lib/TransLabel.svelte';
+	import TransLabel from '$lib/Label/TransLabel.svelte'
+	import { onMount } from 'svelte'
+    import type { TranslationType } from '$lib/util/types'
+	import { translations } from '$lib/util/constants';
 
     let src = "phil/PhilHair.jpg"
-    
-    type Translation = {
-        english: string
-        thai: string
-        arrow: {
-            top: string
-            left: string
-            direction: string
+
+    console.log(translations)
+
+    let questionPool = [...translations]
+
+    let history: Array<TranslationType> = []
+
+    let challengeComplete = false
+    let choosenQuestion: TranslationType
+    function chooseNextQuestion(){
+        console.log("choosing next question")
+        console.log(questionPool)
+        if(!questionPool || questionPool.length === 0) {
+            challengeComplete = true
+            return
         }
+
+        choosenQuestion = questionPool.splice(Math.floor(Math.random()*translations.length), 1)[0]
+        history = [
+            ...history, 
+            choosenQuestion
+        ]
+        console.log(choosenQuestion)
     }
 
-    let translations:Array<Translation> = [
-        {
-            english: "eye",
-            thai: "ตา",
-            arrow: {
-                top: "37%",
-                left: "85%",
-                direction: "left"
-            }
-        },
-        {
-            english: "eyebrow",
-            thai: "คิ้ว",
-            arrow: {
-                top: "26%",
-                left: "-10%",
-                direction: "right"
-            }
-        }
-    ]
+    function showAll(){
+        history = [...translations]
+    }
+
+    onMount(() => {
+        chooseNextQuestion()
+    })
 </script>
 
 <center>
@@ -41,16 +45,22 @@
             <h1>Face</h1>
         </header>
         <div class="face-image">
-            <img {src} alt="Face" />
-            <div>
-                {#each translations as translation}
-                    <TransLabel 
-                        answer={translation.thai} 
-                        name={translation.english}
-                        {...translation.arrow} 
-                    />   
-                {/each}
-            </div>
+            {#if challengeComplete}
+            Challenge Completed
+            {:else}
+                <button class="show-all" on:click={showAll}>Show All</button>
+                <img {src} alt="Face" />
+                <div>
+                    {#each history as translation}
+                        <TransLabel 
+                            on:answer={chooseNextQuestion}
+                            answer={translation.thai}
+                            name={translation.english}
+                            arrow={translation.arrow}
+                        />   
+                    {/each}
+                </div>
+            {/if}
         </div>
     </section>
 </center>
@@ -58,6 +68,9 @@
 <style lang="sass">
     $arrow-color: #000
     $arrow-length: 15rem
+
+    .show-all
+        position: absolute
     
     .face-image img
         max-height: 80vh

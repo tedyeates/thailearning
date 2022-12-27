@@ -1,5 +1,6 @@
 <script lang="ts">
-    import {onMount} from 'svelte'
+    import { createEventDispatcher } from 'svelte'
+    const dispatch = createEventDispatcher()
 
     export let top: string
     export let left: string
@@ -15,22 +16,20 @@
     let isCorrect = false
     function checkAnswer(event: Event){
         let inputElement = event.target as HTMLInputElement
-        if (inputElement.value === answer){
+        if(inputElement.value === answer || attempts > 1){
             label = `${answer}`
-            isCorrect = true
             showInput = false
-            return
+            dispatch('answer')
         }
 
-        if (attempts > 1) {
-            label = `${answer}`
-            showInput = false
-            return
-        }
+        if (inputElement.value === answer) return isCorrect = true
+        if (attempts > 1) return
+
         attempts++
-
         label = `Incorrect Answer, attempt ${attempts}`
     }
+
+    
 
 </script>
 
